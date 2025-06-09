@@ -18,7 +18,7 @@ chmod +x *.sh
 ```
 
 ### 2. Add Your Data
-Download rosbag files from (FAST-LIVO2-Dataset).
+Download rosbag files from [FAST-LIVO2-Dataset](https://connecthkuhk-my.sharepoint.com/:f:/g/personal/zhengcr_connect_hku_hk/ErdFNQtjMxZOorYKDTtK4ugBkogXfq1OfDm90GECouuIQA?e=KngY9Z).
 ```bash
 # Place your .bag files in the bags/ directory
 cp /path/to/your/dataset.bag bags/
