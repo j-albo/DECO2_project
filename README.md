@@ -10,7 +10,7 @@ Get FAST-LIVO2 running in 4 simple steps:
 ```bash
 # Clone or download this repository
 git clone git@github.com:j-albo/DECO2_project.git
-cd fast-livo2-docker
+cd DECO2_project/
 
 # Run initial setup
 chmod +x *.sh
