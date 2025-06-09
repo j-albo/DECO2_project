@@ -1,0 +1,56 @@
+# FAST-LIVO2 Quick Start Guide
+
+Get FAST-LIVO2 running in 4 simple steps.
+
+## Prerequisites
+- Docker installed on your system
+- Linux OS (recommended for GUI support)
+
+## Step 1: Build the Environment
+```bash
+cd fast-livo2-docker
+chmod +x docker/*.sh
+./docker/build_image.sh
+```
+*Takes 20-30 minutes*
+
+## Step 2: Download Sample Data
+1. Download from [official datasets](https://connecthkuhk-my.sharepoint.com/:f:/g/personal/zhengcr_connect_hku_hk/ErdFNQtjMxZOorYKDTtK4ugBkogXfq1OfDm90GECouuIQA?e=KngY9Z)
+2. Place files in `bags/` directory:
+   ```
+   bags/
+   ├── CBD_Building_01.bag
+   └── calibration.yaml
+   ```
+
+## Step 3: Run FAST-LIVO2
+```bash
+./docker/run_container.sh
+```
+
+## Step 4: Process Data
+
+**Terminal 1** (inside container):
+```bash
+roslaunch fast_livo mapping_avia.launch config_file:=/home/developer/bags/calibration.yaml
+```
+
+**Terminal 2** (new window):
+```bash
+docker exec -it fast-livo2-container bash
+rosbag play /home/developer/bags/CBD_Building_01.bag
+```
+
+**Terminal 3** (new window):
+```bash
+docker exec -it fast-livo2-container bash
+rviz
+```
+
+## Expected Result
+- Real-time 3D mapping in rviz
+- Camera feed visualization
+- Trajectory tracking
+
+## Need Help?
+See `README.md` for detailed troubleshooting and configuration options.
