@@ -1,6 +1,7 @@
-# FAST-LIVO2 Docker Environment
+# FAST-LIVO2 Docker Environment - Real-time Version
 # Professional setup for FAST-LIVO2: Fast, Direct LiDAR-Inertial-Visual Odometry
 # Compatible with Ubuntu 20.04 and ROS Noetic
+# Real-time support for Livox Mid-360 + ArduCam
 
 FROM ubuntu:20.04
 
@@ -19,7 +20,9 @@ RUN apt-get install -y \
     lsb-release \
     ca-certificates \
     software-properties-common \
-    apt-transport-https
+    apt-transport-https \
+    udev \
+    usbutils
 
 # Configure ROS GPG key using modern method
 RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
@@ -63,6 +66,23 @@ RUN apt-get install -y \
     libsuitesparse-dev \
     libceres-dev
 
+# Install camera dependencies
+RUN apt-get install -y \
+    ros-noetic-cv-bridge \
+    ros-noetic-image-transport \
+    ros-noetic-image-geometry \
+    ros-noetic-camera-calibration \
+    ros-noetic-camera-info-manager \
+    ros-noetic-usb-cam \
+    v4l-utils \
+    libv4l-dev
+
+# Install additional real-time dependencies
+RUN apt-get install -y \
+    ros-noetic-tf2-tools \
+    ros-noetic-robot-state-publisher \
+    ros-noetic-joint-state-publisher
+
 # Clean apt cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -93,7 +113,9 @@ RUN cd /tmp && \
 
 # Create non-root user
 RUN useradd -ms /bin/bash developer && \
-    echo 'developer ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+    echo 'developer ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
+    usermod -a -G dialout developer && \
+    usermod -a -G video developer
 
 # Switch to developer user
 USER developer
@@ -109,8 +131,15 @@ RUN mkdir -p /home/developer/dev_ws/src
 # Set workspace as working directory
 WORKDIR /home/developer/dev_ws/src
 
-# Clone Livox ROS driver
-RUN git clone https://github.com/Livox-SDK/livox_ros_driver.git
+# Clone Livox SDK2 (for Mid-360)
+RUN git clone https://github.com/Livox-SDK/Livox-SDK2.git && \
+    cd Livox-SDK2 && \
+    mkdir build && cd build && \
+    cmake .. && make -j$(nproc) && \
+    sudo make install
+
+# Clone Livox ROS driver 2 (for Mid-360)
+RUN git clone https://github.com/Livox-SDK/livox_ros_driver2.git
 
 # Clone rpg_vikit (FAST-LIVO2 specific fork)
 RUN git clone https://github.com/xuankuzcr/rpg_vikit.git
@@ -127,14 +156,17 @@ RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && cd /home/developer/dev_ws
 # Build workspace using catkin_make
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && export CMAKE_PREFIX_PATH=/usr/local:\$CMAKE_PREFIX_PATH && catkin_make -DCMAKE_BUILD_TYPE=Release"
 
+# Create real-time launch files
+RUN mkdir -p /home/developer/dev_ws/src/FAST-LIVO2/launch/realtime
+
 # Create environment setup script
 RUN echo '#!/bin/bash\n\
 source /opt/ros/noetic/setup.bash\n\
 source /home/developer/dev_ws/devel/setup.bash\n\
-echo "FAST-LIVO2 environment ready!"\n\
+echo "FAST-LIVO2 Real-time environment ready!"\n\
 echo "Usage examples:"\n\
-echo "  roslaunch fast_livo mapping_avia.launch"\n\
-echo "  rosbag play YOUR_BAG_FILE.bag"\n\
+echo "  roslaunch fast_livo realtime_mid360.launch"\n\
+echo "  roslaunch fast_livo realtime_handheld.launch"\n\
 echo "  rviz"\n\
 exec "$@"' > /home/developer/entrypoint.sh && \
     chmod +x /home/developer/entrypoint.sh

@@ -1,0 +1,4 @@
+# Real-time generated files
+config/realtime/camera_calibration.yaml
+*.bag
+logs/realtime_*

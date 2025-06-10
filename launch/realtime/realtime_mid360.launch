@@ -1,0 +1,73 @@
+<launch>
+    <!-- FAST-LIVO2 Real-time Launch File -->
+    <!-- Livox Mid-360 + ArduCam USB-C -->
+    
+    <!-- Parameters -->
+    <param name="use_sim_time" value="false"/>
+    
+    <!-- Configuration file -->
+    <arg name="config_file" default="$(find fast_livo)/config/realtime_config.yaml"/>
+    
+    <!-- Livox Mid-360 Driver -->
+    <include file="$(find livox_ros_driver2)/launch_ROS1/msg_MID360.launch">
+        <arg name="lvx_file_path" value="$(find livox_ros_driver2)/lvx_file/"/>
+        <arg name="cmdline_str" value="$(find livox_ros_driver2)/config_ROS1/MID360_config.json"/>
+        <arg name="frame_id" value="livox_frame"/>
+        <arg name="user_config_path" value="$(find livox_ros_driver2)/config_ROS1/MID360_config.json"/>
+    </include>
+    
+    <!-- ArduCam USB-C Driver -->
+    <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
+        <param name="video_device" value="/dev/video0"/>
+        <param name="image_width" value="1920"/>
+        <param name="image_height" value="1080"/>
+        <param name="pixel_format" value="yuyv"/>
+        <param name="camera_frame_id" value="camera"/>
+        <param name="io_method" value="mmap"/>
+        <param name="camera_name" value="arducam"/>
+        <param name="camera_info_url" value="package://fast_livo/config/camera_info.yaml"/>
+        <param name="framerate" value="30"/>
+        <param name="auto_focus" value="false"/>
+        <param name="focus" value="0"/>
+        <param name="auto_exposure" value="1"/>
+        <param name="exposure" value="166"/>
+        <param name="brightness" value="128"/>
+        <param name="contrast" value="128"/>
+        <param name="saturation" value="128"/>
+        <param name="sharpness" value="128"/>
+    </node>
+    
+    <!-- Image rectification -->
+    <node name="image_proc" pkg="image_proc" type="image_proc" ns="camera"/>
+    
+    <!-- FAST-LIVO2 Node -->
+    <node pkg="fast_livo" type="fastlivo_mapping" name="fastlivo_mapping" output="screen">
+        <rosparam file="$(arg config_file)" command="load"/>
+        <param name="config_file" value="$(arg config_file)"/>
+        
+        <!-- Real-time specific parameters -->
+        <param name="real_time_mode" value="true"/>
+        <param name="max_solve_time" value="0.005"/>
+        <param name="publish_tf" value="true"/>
+        <param name="map_frame" value="map"/>
+        <param name="base_frame" value="base_link"/>
+        
+        <!-- Remap topics -->
+        <remap from="/cloud_registered" to="/fast_livo/cloud_registered"/>
+        <remap from="/path" to="/fast_livo/path"/>
+        <remap from="/odometry" to="/fast_livo/odometry"/>
+        <remap from="/current_scan" to="/fast_livo/current_scan"/>
+    </node>
+    
+    <!-- Transform publisher for sensor setup -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_livox"
+          args="0 0 0 0 0 0 base_link livox_frame"/>
+    
+    <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_camera"
+          args="0.05 0 0 0 0 0 base_link camera"/>
+    
+    <!-- Optional: Real-time visualization -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find fast_livo)/rviz/realtime_config.rviz" if="$(arg enable_rviz)" output="screen"/>
+    <arg name="enable_rviz" default="false"/>
+    
+</launch>

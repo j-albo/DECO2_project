@@ -1,0 +1,90 @@
+# FAST-LIVO2 Real-time Configuration
+# Livox Mid-360 + ArduCam USB-C Setup
+
+# Common parameters
+common:
+    lid_topic:  "/livox/lidar"
+    imu_topic:  "/livox/imu"
+    img_topic:  "/camera/image_raw"
+    time_sync_en: false         # set false since the time stamp of camera and lidar are not synchronized
+    time_offset_lidar_to_imu: 0.0 # Time offset between lidar and IMU calibrated by other algorithms, e.g., LI-Init (in seconds)
+    time_offset_camera_to_imu: 0.0 # Time offset between camera and IMU calibrated by other algorithms, e.g., LI-Init (in seconds)
+
+# LiDAR feature extraction
+preprocess:
+    lidar_type: 1                # 1 for Livox serials LiDAR
+    scan_line: 4
+    blind: 0.01
+    inf_bound: 15
+    N_SCANS: 4
+    point_filter_num: 3
+    feature_extract_enable: true
+    feature_extract_num: 500
+    mapping_enable: true
+
+# IMU parameters
+imu:
+    imu_en: true
+    extrinsic_est_en: true      # true: enable the online estimation of IMU-LiDAR extrinsic
+    imu_time_inte: 0.005        # = 1/IMU_freq 
+    imu_init_time: 0.3
+    mean_acc: [ 0.0, 0.0, -9.805]
+    mean_gyr: [ 0.0, 0.0, 0.0 ]
+    angvel_avr: [ 0.0, 0.0, 0.0 ]
+    acc_avr: [ 0.0, 0.0, 0.0 ]
+    acc_N: [ 3.9939570888238808e-03, 3.9939570888238808e-03, 3.9939570888238808e-03 ]
+    gyr_N: [ 1.5636343949698187e-03, 1.5636343949698187e-03, 1.5636343949698187e-03 ]
+    b_acc: [ 0.0, 0.0, 0.0 ]
+    b_gyr: [ 0.0, 0.0, 0.0 ]
+
+# Extrinsic parameters between IMU and LiDAR
+mapping:
+    extrinsic_T: [ 0.011, 0.02329, 0.04412 ]
+    extrinsic_R: [ 1, 0, 0,
+                   0, 1, 0,
+                   0, 0, 1 ]
+
+# Camera parameters
+cam:
+    image_width: 1920
+    image_height: 1080
+    camera_intrinsic: [1061.8973931738281, 0.0, 960.5, 0.0, 1061.8973931738281, 540.5, 0.0, 0.0, 1.0]  # Default values - CALIBRATE!
+    camera_dist_coeffs: [0.0, 0.0, 0.0, 0.0]  # [k1, k2, p1, p2] - CALIBRATE!
+    camera_ext_R: [0.0, -1.0, 0.0, 0.0, 0.0, -1.0, 1.0, 0.0, 0.0]  # Rotation from camera to LiDAR - CALIBRATE!
+    camera_ext_t: [0.05, 0.0, 0.0]  # Translation from camera to LiDAR (meters) - CALIBRATE!
+    distortion_model: "plumb_bob"
+
+# FAST-LIVO2 specific parameters
+fast_livo:
+    max_iteration: 3
+    voxel_map_enable: true
+    max_voxel_size: 1.0
+    max_layer: 2
+    layer_point_size: [5, 5, 5]
+    plannar_threshold: 0.01
+    hash_map_enable: true
+    mean_q: 0.01
+    mean_t: 0.01
+    max_solve_time: 0.008       # max solver time in seconds for real-time performance
+    publish_voxel_map: false
+    publish_max_voxel_layer: 0
+
+# Real-time optimization
+realtime:
+    max_solve_time: 0.005       # Maximum solver time per frame (5ms for 200Hz)
+    downsample_size: 0.05       # Point cloud downsampling for performance
+    max_keyframe_gap: 0.2       # Maximum time between keyframes
+    enable_loop_closure: false  # Disable for handheld real-time use
+    mapping_frequency: 20       # Hz - mapping update rate
+    
+# Publish settings
+publish:
+    path_en: true
+    scan_publish_en: true       # true: enable the publish of scans raw data
+    dense_publish_en: true      # true: enable the publish of dense point cloud
+    scan_bodyframe_pub_en: true # true: enable the publish of scans in body frame
+
+# Save map
+save:
+    save_map_en: false
+    save_path: "/home/developer/data/realtime_maps/"
