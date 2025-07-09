@@ -1,0 +1,75 @@
+# docker-compose.yml - FAST-LIVO2 with Livox Mid-360
+
+version: '3.8'
+
+services:
+  fast-livo2:
+    build: .
+    image: fast-livo2-mid360:latest
+    container_name: fast-livo2-container
+    
+    # Privileged mode needed for network configuration and hardware access
+    privileged: true
+    
+    # Host networking for Livox Mid-360 communication
+    network_mode: host
+    
+    # Environment variables for X11 forwarding
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+    
+    # Volume mounts
+    volumes:
+      # X11 socket for GUI applications
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # Data persistence
+      - ./data:/home/developer/data:rw
+      # Configuration files
+      - ./config:/home/developer/config:rw
+    
+    # Device access for cameras
+    devices:
+      - /dev/video0:/dev/video0  # Primary camera
+      - /dev/video1:/dev/video1  # Secondary camera (if available)
+    
+    # Interactive mode
+    stdin_open: true
+    tty: true
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "ping", "-c", "1", "192.168.1.170"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Separate service for SDK testing
+  livox-sdk-test:
+    build: .
+    image: fast-livo2-mid360:latest
+    container_name: livox-sdk-test
+    privileged: true
+    network_mode: host
+    
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+    
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ./data:/home/developer/data:rw
+    
+    stdin_open: true
+    tty: true
+    
+    # Override command to run SDK test
+    command: ["/bin/bash", "-c", "~/test_livox_sdk.sh"]
+    
+    # Only start when explicitly called
+    profiles:
+      - testing

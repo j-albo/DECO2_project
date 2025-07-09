@@ -1,182 +1,138 @@
-# FAST-LIVO2 Docker Environment
+# DECO2 Project: FAST-LIVO2 Real-Time SLAM System
 
-A complete Docker environment for [FAST-LIVO2](https://github.com/hku-mars/FAST-LIVO2): Fast, Direct LiDAR-Inertial-Visual Odometry with fully automated execution scripts.
+## 🎯 Project Overview
+
+Complete real-time SLAM system using FAST-LIVO2 algorithm with Livox Mid-360 LiDAR. Evolution from offline bag processing to live hardware integration.
+
+**Two Operation Modes:**
+- 📁 **Bag Processing**: Process pre-recorded datasets (original stable version)
+- 🚀 **Real-Time Hardware**: Live SLAM with Livox Mid-360 LiDAR (NEW!)
 
 ## 🚀 Quick Start
 
-Get FAST-LIVO2 running in 4 simple steps:
-
-### 1. Initial Setup (One-time)
+### Real-Time Hardware (Recommended)
 ```bash
-# Clone or download this repository
-git clone git@github.com:j-albo/DECO2_project.git
-cd DECO2_project/
+cd docker/real-time
+./build_fast_livo2.sh
+./run_fast_livo2.sh
 
-# Run initial setup
-chmod +x *.sh
-./setup.sh
+# Inside container:
+test-livox
+start-slam
 ```
 
-### 2. Add Your Data
-Download rosbag files from [FAST-LIVO2-Dataset](https://connecthkuhk-my.sharepoint.com/:f:/g/personal/zhengcr_connect_hku_hk/ErdFNQtjMxZOorYKDTtK4ugBkogXfq1OfDm90GECouuIQA?e=KngY9Z).
+### Bag Processing (Original)
 ```bash
-# Place your .bag files in the bags/ directory
-cp /path/to/your/dataset.bag bags/
-
-# (Optional) Add configuration files
-cp /path/to/calibration.yaml config/
-```
-
-### 3. Run FAST-LIVO2
-Choose your preferred method:
-
-**Interactive Selector (Recommended):**
-```bash
+cd docker/bag-processing
 ./run_fast_livo2.sh
 ```
 
-**Quick Run (First .bag found):**
+## 🏗️ Hardware Requirements (Real-Time Mode)
+
+### Essential Components
+- **Livox Mid-360 LiDAR**
+- **Power supply**: 12-24V, >15W
+- **Ethernet cable** (Cat5e or better)
+- **Host computer**: Ubuntu 20.04+ with Docker
+
+### Optional Components
+- **USB Camera** (ArduCam recommended)
+
+## 📖 Documentation
+
+- 🚀 [Real-Time Hardware Setup](docs/hardware-setup.md) - Complete guide for Livox Mid-360
+- 🔄 [Project Evolution](docs/project-evolution.md) - From bags to hardware
+- 📁 [Original Bag Processing](docker/bag-processing/) - Stable offline processing
+
+## 🛠️ Installation
+
+### Prerequisites
 ```bash
-./quick_run.sh
+# Install Docker
+sudo apt update
+sudo apt install docker.io docker-compose
+sudo usermod -aG docker $USER
+# Logout and login again
 ```
 
-**Specific File:**
+### Clone and Build
 ```bash
-./run_fast_livo2.sh my_dataset.bag
+git clone https://github.com/j-albo/DECO2_project.git
+cd DECO2_project/docker/real-time
+./build_fast_livo2.sh
 ```
 
-### 4. Expected Result
-- Real-time 3D mapping in rviz
-- Camera feed visualization
-- Trajectory tracking
-- Automatic process management
+## 🎯 Usage
 
-## 📋 Overview
+### 1. Hardware Setup
+- Power on Livox Mid-360 (LED should turn blue when ready)
+- Connect via Ethernet cable
+- Connect USB camera if using
 
-This Docker setup provides a ready-to-use environment for FAST-LIVO2 with:
-
-- **Ubuntu 20.04 LTS** with ROS Noetic Desktop Full
-- **All dependencies** pre-installed (PCL, OpenCV, Eigen, Sophus, etc.)
-- **Pre-compiled FAST-LIVO2** workspace
-- **GUI support** for rviz and visualization tools
-- **Automated execution scripts** for one-command operation
-- **Interactive file selection** and configuration management
-
-## 🛠️ Prerequisites
-
-### Required
-- **Docker**: Version 20.10 or newer ([Installation Guide](https://docs.docker.com/get-docker/))
-- **Hardware**: 
-  - Minimum 8GB RAM
-  - 15GB free disk space
-  - GPU support recommended for better visualization
-
-### Platform-Specific
-**Linux (Recommended):**
-- X11 server for GUI applications (usually pre-installed)
-
-**Windows:**
-- [Docker Desktop with WSL2](https://docs.docker.com/desktop/windows/install/)
-- [VcXsrv](https://sourceforge.net/projects/vcxsrv/) or similar X server for GUI support
-
-**macOS:**
-- [Docker Desktop](https://docs.docker.com/desktop/mac/install/)
-- [XQuartz](https://www.xquartz.org/) for GUI support
-
-## 📂 Project Structure
-
-```
-fast-livo2-docker/
-├── docker/
-│   ├── Dockerfile              # Docker image definition
-│   ├── build_image.sh          # Image building script
-│   └── run_container.sh        # Original container runner
-├── run_fast_livo2.sh          # Main automated runner
-├── quick_run.sh               # Simple quick execution
-├── setup.sh                   # Initial setup script
-├── usage_examples.sh          # Usage examples
-├── bags/                      # Place .bag files here
-├── config/                    # Configuration files
-├── data/                      # Output data and results
-└── README.md                  # This file
-```
-
-## 🎯 Usage Guide
-
-### Automated Scripts
-
-#### `run_fast_livo2.sh` - Main Automated Runner
-
-Full-featured script with interactive selection and configuration options.
-
-**Basic Usage:**
+### 2. Run System
 ```bash
-# Interactive file selector
 ./run_fast_livo2.sh
 
-# Run with specific file
-./run_fast_livo2.sh my_dataset.bag
+# Inside container, test hardware:
+test-livox
 
-# Run with custom configuration
-./run_fast_livo2.sh -c calibration.yaml my_dataset.bag
-
-# Build image before running
-./run_fast_livo2.sh --build my_dataset.bag
+# If successful, start SLAM:
+start-slam
 ```
 
-**Advanced Options:**
+### 3. Expected Results
+- **Network**: Automatic configuration to 192.168.1.5
+- **Mid-360**: Detected at 192.168.1.170
+- **Data Flow**: Point cloud and IMU data streaming
+- **SLAM**: Real-time mapping in RViz
+
+## 🔧 Troubleshooting
+
+### Network Issues
 ```bash
-# Use different launch file
-./run_fast_livo2.sh -l mapping_mid360.launch dataset.bag
+# Check connectivity
+ping 192.168.1.170
 
-# Custom delay before rosbag playback
-./run_fast_livo2.sh -d 15 dataset.bag
-
-# Run without rviz
-./run_fast_livo2.sh --no-rviz dataset.bag
-
-# List available .bag files
-./run_fast_livo2.sh --list-bags
-
-# Show help
-./run_fast_livo2.sh --help
+# Manual network config if needed
+sudo ip addr add 192.168.1.5/24 dev <interface>
 ```
 
-#### `quick_run.sh` - Simple Quick Execution
+### Hardware Issues
+- **Mid-360 LED not blue**: Check power supply
+- **No network**: Check cable and interface
+- **Permission errors**: Run with `sudo` if needed
 
-Minimal script that automatically uses the first .bag file found.
+## 📊 Project Evolution
 
-```bash
-./quick_run.sh
-```
+This project demonstrates evolution from:
+- **Academic**: Processing pre-recorded datasets
+- **Practical**: Real-time SLAM with physical hardware
 
-#### `setup.sh` - Initial Setup
+Both approaches use the same FAST-LIVO2 algorithm but with different data sources and complexity levels.
 
-One-time setup script that prepares the environment.
+## 🏆 Results
 
-```bash
-./setup.sh
-```
+- ✅ **Bag Processing**: Stable, reproducible results
+- ✅ **Real-Time**: Live mapping and navigation capability
+- ✅ **Docker**: One-command deployment for both modes
+- ✅ **Documentation**: Complete setup guides
 
-### Manual Docker Usage
+## 🤝 Contributing
 
-If you prefer manual control:
+1. For bag processing improvements: work in `docker/bag-processing/`
+2. For real-time features: work in `docker/real-time/`
+3. For documentation: update files in `docs/`
 
-```bash
-# Build image
-./docker/build_image.sh
+## 📝 License
 
-# Run container
-./docker/run_container.sh
+MIT License - see LICENSE file for details.
 
-# Inside container - run FAST-LIVO2 manually
-roslaunch fast_livo mapping_avia.launch
+## 🔗 References
 
-# In another terminal - play dataset
-docker exec -it fast-livo2-container bash
-rosbag play /home/developer/bags/your_dataset.bag
+- [FAST-LIVO2](https://github.com/hku-mars/FAST-LIVO2) - Original algorithm
+- [Livox Mid-360](https://www.livoxtech.com/mid-360) - Hardware specifications
+- [Docker](https://www.docker.com/) - Containerization platform
 
-# In another terminal - open rviz
-docker exec -it fast-livo2-container bash
-rviz
-```
+---
+
+**Note**: The real-time hardware mode represents significant advancement from offline processing to practical SLAM applications ready for deployment.
