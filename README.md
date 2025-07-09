@@ -10,7 +10,7 @@ Complete real-time SLAM system using FAST-LIVO2 algorithm with Livox Mid-360 LiD
 
 ## 🚀 Quick Start
 
-### Real-Time Hardware (Recommended)
+### Real-Time Hardware
 ```bash
 cd docker/real-time
 ./build_fast_livo2.sh
@@ -21,7 +21,7 @@ test-livox
 start-slam
 ```
 
-### Bag Processing (Original)
+### Bag Processing
 ```bash
 cd docker/bag-processing
 ./run_fast_livo2.sh
