@@ -62,9 +62,9 @@ cd DECO2_project/docker/real-time
 ## 🎯 Usage
 
 ### 1. Hardware Setup
-- Power on Livox Mid-360 (LED should turn blue when ready)
+- Power on Livox Mid-360
 - Connect via Ethernet cable
-- Connect USB camera if using
+- Connect USB camera
 
 ### 2. Run System
 ```bash
