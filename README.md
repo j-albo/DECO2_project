@@ -34,13 +34,10 @@ cd docker/bag-processing
 - **Power supply**: 12-24V, >15W
 - **Ethernet cable** (Cat5e or better)
 - **Host computer**: Ubuntu 20.04+ with Docker
-
-### Optional Components
 - **USB Camera** (ArduCam recommended)
 
 ## 📖 Documentation
 
-- 🚀 [Real-Time Hardware Setup](docs/hardware-setup.md) - Complete guide for Livox Mid-360
 - 🔄 [Project Evolution](docs/project-evolution.md) - From bags to hardware
 - 📁 [Original Bag Processing](docker/bag-processing/) - Stable offline processing
 
